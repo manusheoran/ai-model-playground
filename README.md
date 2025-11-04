@@ -316,3 +316,12 @@ Built with:
 - [Flutter](https://flutter.dev/)
 - [PostgreSQL](https://www.postgresql.org/)
 - [Vercel AI Gateway](https://vercel.com/)
+
+
+<img width="332" height="741" alt="Screenshot 2025-11-04 at 8 13 14 PM" src="https://github.com/user-attachments/assets/aad76862-77a1-4d11-9c75-80203a75e387" />
+<img width="334" height="742" alt="Screenshot 2025-11-04 at 8 12 21 PM" src="https://github.com/user-attachments/assets/3847ea81-f609-4ade-bf7a-6a9f16493f8c" />
+<img width="333" height="740" alt="Screenshot 2025-11-04 at 8 29 24 PM" src="https://github.com/user-attachments/assets/4d3b80fc-2efa-487b-8e8a-fd2e411912d8" />
+
+
+
+
