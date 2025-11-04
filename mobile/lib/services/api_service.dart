@@ -11,21 +11,45 @@ class ApiService {
   static const String baseUrl = 'http://10.0.2.2:3000';
 
   Future<List<ModelResponse>> compareModels(String prompt) async {
+    final startTime = DateTime.now();
+    print('[ApiService] Starting API request at ${startTime.toIso8601String()}');
+    
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/compare'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'prompt': prompt}),
+      ).timeout(
+        const Duration(seconds: 45),
+        onTimeout: () => throw Exception('Request timed out after 45 seconds'),
       );
+
+      final endTime = DateTime.now();
+      final duration = endTime.difference(startTime).inMilliseconds;
+      print('[ApiService] Response received after ${duration}ms');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final serverTime = data['serverTotalTime'];
+        final networkTime = duration - (serverTime ?? 0);
+        
+        print('[ApiService] Server processing: ${serverTime}ms, Network latency: ~${networkTime}ms');
+        
         final List<dynamic> responsesJson = data['responses'];
-        return responsesJson.map((json) => ModelResponse.fromJson(json)).toList();
+        final parseStartTime = DateTime.now();
+        final result = responsesJson.map((json) => ModelResponse.fromJson(json)).toList();
+        final parseTime = DateTime.now().difference(parseStartTime).inMilliseconds;
+        
+        print('[ApiService] JSON parsing took ${parseTime}ms');
+        print('[ApiService] Total client time: ${DateTime.now().difference(startTime).inMilliseconds}ms');
+        
+        return result;
       } else {
         throw Exception('Failed to compare models: ${response.body}');
       }
     } catch (e) {
+      final errorTime = DateTime.now().difference(startTime).inMilliseconds;
+      print('[ApiService] Error after ${errorTime}ms: $e');
       throw Exception('Error comparing models: $e');
     }
   }

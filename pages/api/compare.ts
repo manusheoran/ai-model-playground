@@ -11,6 +11,7 @@ export default async function handler(
   }
 
   try {
+    const startTime = Date.now();
     const { prompt } = req.body;
 
     if (!prompt || typeof prompt !== 'string') {
@@ -21,11 +22,28 @@ export default async function handler(
       return res.status(400).json({ error: 'Prompt is too long (max 10000 characters)' });
     }
 
+    console.log(`[Compare API] Starting comparison for prompt: "${prompt.substring(0, 50)}..."`);
+    
     // Get responses from all three models in parallel
+    const aiStartTime = Date.now();
     const responses = await compareModels(prompt);
+    const aiEndTime = Date.now();
+    
+    console.log(`[Compare API] AI models completed in ${aiEndTime - aiStartTime}ms`);
+    console.log(`[Compare API] Individual times: ${responses.map(r => `${r.modelName}: ${r.responseTimeMs}ms`).join(', ')}`);
 
-    // Save to database
-    const comparisonId = await saveComparison(
+    // Return response immediately
+    const totalTime = Date.now() - startTime;
+    console.log(`[Compare API] Sending response after ${totalTime}ms`);
+    
+    res.status(200).json({
+      responses,
+      serverTotalTime: totalTime,
+    });
+
+    // Save to database asynchronously (don't block response)
+    const dbStartTime = Date.now();
+    saveComparison(
       prompt,
       responses.map((r) => ({
         modelName: r.modelName,
@@ -37,11 +55,10 @@ export default async function handler(
         estimatedCost: r.estimatedCost,
         error: r.error,
       }))
-    );
-
-    res.status(200).json({
-      comparisonId,
-      responses,
+    ).then(() => {
+      console.log(`[Compare API] Database save completed in ${Date.now() - dbStartTime}ms`);
+    }).catch((err) => {
+      console.error('[Compare API] Failed to save comparison:', err);
     });
   } catch (error: any) {
     console.error('Error in compare API:', error);
