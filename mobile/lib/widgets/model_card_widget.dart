@@ -31,15 +31,10 @@ class ModelCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header
           _buildHeader(),
-          
-          // Content
           Expanded(
             child: _buildContent(),
           ),
-          
-          // Metrics Footer (only if not loading and no error)
           if (!isLoading && !response.hasError && response.responseText.isNotEmpty)
             _buildMetrics(),
         ],
